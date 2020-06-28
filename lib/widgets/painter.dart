@@ -3,9 +3,21 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class PainterCanvas extends CustomPainter {
-  PainterCanvas({this.pointsList});
-
   List<PaintedPoints> pointsList;
+
+  List<PaintedSquires> squaresList;
+  PaintedSquires unfinishedSquare;
+
+  List<PaintedCircles> circlesList;
+  PaintedCircles unfinishedCircle;
+
+  PainterCanvas(
+      {this.pointsList,
+      this.squaresList,
+      this.unfinishedSquare,
+      this.circlesList,
+      this.unfinishedCircle});
+
   List<Offset> offsetPoints = List();
 
   @override
@@ -19,9 +31,41 @@ class PainterCanvas extends CustomPainter {
         offsetPoints.add(pointsList[i].points);
         offsetPoints.add(Offset(
             pointsList[i].points.dx + 0.1, pointsList[i].points.dy + 0.1));
-
         canvas.drawPoints(PointMode.points, offsetPoints, pointsList[i].paint);
       }
+    }
+
+    for (var i = 0; i < squaresList.length; i++) {
+      if (squaresList[i] != null) {
+        squaresList[i].paint.style = PaintingStyle.stroke;
+        final rect = Rect.fromPoints(squaresList[i].start, squaresList[i].end);
+        canvas.drawRect(rect, squaresList[i].paint);
+      }
+    }
+
+    for (var i = 0; i < circlesList.length; i++) {
+      if (circlesList[i] != null) {
+        circlesList[i].paint.style = PaintingStyle.stroke;
+        double radius = (circlesList[i].end.dx - circlesList[i].start.dx) / 2;
+        canvas.drawCircle(circlesList[i].start, radius, circlesList[i].paint);
+      }
+    }
+
+    if (unfinishedSquare != null) {
+      unfinishedSquare.paint.style = PaintingStyle.stroke;
+      final rect =
+          Rect.fromPoints(unfinishedSquare.start, unfinishedSquare.end);
+      canvas.drawRect(rect, unfinishedSquare.paint);
+    }
+
+    if (unfinishedCircle != null) {
+      unfinishedCircle.paint.style = PaintingStyle.stroke;
+      double radius = 0;
+      if (unfinishedCircle.start.dx > unfinishedCircle.end.dx)
+        radius = (unfinishedCircle.start.dx - unfinishedCircle.end.dx) / 2;
+      else
+        radius = (unfinishedCircle.end.dx - unfinishedCircle.start.dx) / 2;
+      canvas.drawCircle(unfinishedCircle.start, radius, unfinishedCircle.paint);
     }
   }
 
@@ -37,12 +81,14 @@ class PaintedPoints {
 
 class PaintedCircles {
   Paint paint;
-  Offset points;
-  PaintedCircles({this.points, this.paint});
+  Offset start;
+  Offset end;
+  PaintedCircles({this.start, this.end, this.paint});
 }
 
 class PaintedSquires {
   Paint paint;
-  Offset points;
-  PaintedSquires({this.points, this.paint});
+  Offset start;
+  Offset end;
+  PaintedSquires({this.paint, this.start, this.end});
 }

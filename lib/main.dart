@@ -21,6 +21,9 @@ class MyApp extends StatelessWidget {
         fontFamily: "Arial",
         primarySwatch: Colors.grey,
         visualDensity: VisualDensity.adaptivePlatformDensity,
+        buttonTheme: ButtonThemeData(
+          buttonColor: Color(0x00BDBDBD),
+        ),
       ),
       //home: PainterScreen(),
       home: ClassicPaint(),

@@ -7,6 +7,8 @@ TODO
 5. Text
 6. Box
 */
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'widgets/menu-items.dart';
@@ -32,6 +34,13 @@ class _ClassicPaintState extends State<ClassicPaint> {
   List<PaintedPoints> pointsListDeleted = List();
   List<RecordPaints> paintedPoints = List();
   enumToolTypes selectedTool = enumToolTypes.pencil;
+  List<enumToolTypes> drawHistory = List();
+
+  List<PaintedSquires> squaresList = List();
+  PaintedSquires unfinishedSquare;
+
+  List<PaintedCircles> circleList = List();
+  PaintedCircles unfinishedCircle;
 
   StrokeCap strokeType = StrokeCap.square;
   double strokeWidth = 3.0;
@@ -86,15 +95,26 @@ class _ClassicPaintState extends State<ClassicPaint> {
                   GestureDetector(
                     onTap: () {
                       setState(() {
-                        //pointsListDeleted.;
-                        if (paintedPoints.length > 0) {
-                          RecordPaints lastPoint = paintedPoints.last;
+                        if (drawHistory.length > 0) {
+                          enumToolTypes lastAction = drawHistory.last;
+                          if (lastAction == enumToolTypes.eraser ||
+                              lastAction == enumToolTypes.pencil) {
+                            if (paintedPoints.length > 0) {
+                              RecordPaints lastPoint = paintedPoints.last;
 
-                          if (lastPoint.endIndex != null)
-                            pointsList.removeRange(
-                                lastPoint.startIndex, lastPoint.endIndex);
-                          paintedPoints.removeLast();
+                              if (lastPoint.endIndex != null)
+                                pointsList.removeRange(
+                                    lastPoint.startIndex, lastPoint.endIndex);
+                              paintedPoints.removeLast();
+                            }
+                          } else if (lastAction == enumToolTypes.rectangle) {
+                            squaresList.removeLast();
+                          } else {
+                            circleList.removeLast();
+                          }
+                          drawHistory.removeLast();
                         }
+                        //pointsListDeleted.;
                       });
                     },
                     child: MenuItem("Undo"),
@@ -104,11 +124,19 @@ class _ClassicPaintState extends State<ClassicPaint> {
                       setState(() {
                         pointsList.clear();
                         paintedPoints.clear();
+                        squaresList.clear();
+                        circleList.clear();
                       });
                     },
                     child: MenuItem("Clear"),
                   ),
-                  MenuItem("Help"),
+                  GestureDetector(
+                    onTap: () {
+                      myDialog();
+                      //exit(0);
+                    },
+                    child: MenuItem("Exit"),
+                  ),
                 ],
               ),
             ),
@@ -133,27 +161,20 @@ class _ClassicPaintState extends State<ClassicPaint> {
                         SizedBox(
                           height: 20,
                         ),
-                        Visibility(
-                          visible: selectedTool == enumToolTypes.pencil
-                              ? true
-                              : selectedTool == enumToolTypes.eraser
-                                  ? true
-                                  : false,
-                          child: Container(
-                            width: 80,
-                            height: 90,
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey, width: 2),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                strokeWidthWidget(3),
-                                strokeWidthWidget(5),
-                                strokeWidthWidget(7),
-                              ],
-                            ),
+                        Container(
+                          width: 80,
+                          height: 90,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey, width: 2),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              strokeWidthWidget(3),
+                              strokeWidthWidget(5),
+                              strokeWidthWidget(7),
+                            ],
                           ),
                         ),
                       ],
@@ -169,40 +190,87 @@ class _ClassicPaintState extends State<ClassicPaint> {
                               setState(() {
                                 RenderBox renderBox =
                                     context.findRenderObject();
-                                pointsList.add(
-                                  PaintedPoints(
-                                    points: renderBox
-                                        .globalToLocal(details.globalPosition),
-                                    paint: getPoint(),
-                                  ),
-                                );
+                                if (selectedTool == enumToolTypes.pencil ||
+                                    selectedTool == enumToolTypes.eraser) {
+                                  pointsList.add(
+                                    PaintedPoints(
+                                      points: renderBox.globalToLocal(
+                                          details.globalPosition),
+                                      paint: getPoint(),
+                                    ),
+                                  );
+                                } else if (selectedTool ==
+                                    enumToolTypes.rectangle) {
+                                  unfinishedSquare.end = renderBox
+                                      .globalToLocal(details.globalPosition);
+                                } else if (selectedTool ==
+                                    enumToolTypes.circle) {
+                                  unfinishedCircle.end = renderBox
+                                      .globalToLocal(details.globalPosition);
+                                }
                               });
                             },
                             onPanStart: (details) {
                               setState(() {
-                                if (pointsList.length > 0) {
-                                  paintedPoints.add(
-                                      RecordPaints(pointsList.length, null));
-                                } else
-                                  paintedPoints.add(RecordPaints(0, null));
                                 RenderBox renderBox =
                                     context.findRenderObject();
-                                pointsList.add(
-                                  PaintedPoints(
-                                    points: renderBox
-                                        .globalToLocal(details.globalPosition),
-                                    paint: getPoint(),
-                                  ),
-                                );
+                                if (selectedTool == enumToolTypes.pencil ||
+                                    selectedTool == enumToolTypes.eraser) {
+                                  if (pointsList.length > 0) {
+                                    paintedPoints.add(
+                                        RecordPaints(pointsList.length, null));
+                                  } else
+                                    paintedPoints.add(RecordPaints(0, null));
+
+                                  pointsList.add(
+                                    PaintedPoints(
+                                      points: renderBox.globalToLocal(
+                                          details.globalPosition),
+                                      paint: getPoint(),
+                                    ),
+                                  );
+                                } else if (selectedTool ==
+                                    enumToolTypes.rectangle) {
+                                  unfinishedSquare = PaintedSquires();
+                                  Offset os = renderBox
+                                      .globalToLocal(details.globalPosition);
+                                  unfinishedSquare.start = os;
+                                  unfinishedSquare.end = os;
+                                  unfinishedSquare.paint = getPoint();
+                                } else if (selectedTool ==
+                                    enumToolTypes.circle) {
+                                  unfinishedCircle = PaintedCircles();
+                                  Offset os = renderBox
+                                      .globalToLocal(details.globalPosition);
+                                  unfinishedCircle.start = os;
+                                  unfinishedCircle.end = os;
+                                  unfinishedCircle.paint = getPoint();
+                                }
                               });
                             },
                             onPanEnd: (details) {
                               setState(() {
-                                paintedPoints
-                                    .firstWhere(
-                                        (element) => element.endIndex == null)
-                                    .endIndex = pointsList.length;
-                                pointsList.add(null);
+                                drawHistory.add(selectedTool);
+                                if (selectedTool == enumToolTypes.pencil ||
+                                    selectedTool == enumToolTypes.eraser) {
+                                  paintedPoints
+                                      .firstWhere(
+                                          (element) => element.endIndex == null)
+                                      .endIndex = pointsList.length;
+                                  pointsList.add(null);
+                                } else if (selectedTool ==
+                                    enumToolTypes.rectangle) {
+                                  setState(() {
+                                    squaresList.add(unfinishedSquare);
+                                    unfinishedSquare = null;
+                                  });
+                                } else if (selectedTool ==
+                                    enumToolTypes.circle) {
+                                  setState(() {
+                                    circleList.add(unfinishedCircle);
+                                    unfinishedCircle = null;
+                                  });
+                                }
                               });
                             },
                             child: ClipRect(
@@ -217,8 +285,11 @@ class _ClassicPaintState extends State<ClassicPaint> {
                                           .heightConstraints()
                                           .maxHeight),
                                   painter: PainterCanvas(
-                                    pointsList: pointsList,
-                                  ),
+                                      pointsList: pointsList,
+                                      squaresList: squaresList,
+                                      circlesList: circleList,
+                                      unfinishedSquare: unfinishedSquare,
+                                      unfinishedCircle: unfinishedCircle),
                                 ),
                               ),
                             ),
@@ -289,7 +360,7 @@ class _ClassicPaintState extends State<ClassicPaint> {
               child: Row(
                 children: <Widget>[
                   Text(
-                    "For Help, click Help Topics on the Help Menu.",
+                    "Thanks for using our application. Please share your feedback.",
                     style: Theme.of(context)
                         .textTheme
                         .caption
@@ -381,6 +452,108 @@ class _ClassicPaintState extends State<ClassicPaint> {
         ),
       ),
     );
+  }
+
+  myDialog() {
+    Color buttonColor = const Color(0xFFc0c0c0);
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          // return object of type Dialog
+          return Scaffold(
+            backgroundColor: Colors.transparent,
+            body: Center(
+              child: Container(
+                width: 400,
+                height: 150,
+                padding: EdgeInsets.all(2),
+                color: Color(0xFFc0c0c0),
+                child: Column(children: <Widget>[
+                  Container(
+                    height: 30,
+                    color: Colors.indigo[900],
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: <Widget>[
+                        SizedBox(width: 10),
+                        Text("Alert",
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.white,
+                                fontFamily: "Arial")),
+                        Expanded(
+                          child: Container(
+                            alignment: Alignment.centerRight,
+                            child: ButtonTheme(
+                              buttonColor: buttonColor,
+                              shape: Border.all(
+                                width: 1,
+                                color: Color(0xFFa1a1a1),
+                              ),
+                              minWidth: 10,
+                              height: 25,
+                              child: RaisedButton(
+                                child: Text("X",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                                onPressed: () => {Navigator.pop(context, true)},
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Container(
+                    child: Text("Are you sure want to close application?",
+                        style: Theme.of(context).textTheme.headline6),
+                  ),
+                  Spacer(),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: <Widget>[
+                      ButtonTheme(
+                        buttonColor: buttonColor,
+                        shape: Border.all(
+                          width: 1,
+                          color: Color(0xFFa1a1a1),
+                        ),
+                        child: RaisedButton(
+                          child: Text("Yes",
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          onPressed: () => {exit(0)},
+                        ),
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      ButtonTheme(
+                        buttonColor: buttonColor,
+                        shape: Border.all(
+                          width: 1,
+                          color: Color(0xFFa1a1a1),
+                        ),
+                        child: RaisedButton(
+                          child: Text("No",
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          onPressed: () => {Navigator.pop(context, true)},
+                        ),
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                    ],
+                  ),
+                ]),
+              ),
+            ),
+          );
+        });
   }
 
   List<Widget> getColorBoxes() {
