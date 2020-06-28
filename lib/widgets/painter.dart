@@ -34,3 +34,15 @@ class PaintedPoints {
   Offset points;
   PaintedPoints({this.points, this.paint});
 }
+
+class PaintedCircles {
+  Paint paint;
+  Offset points;
+  PaintedCircles({this.points, this.paint});
+}
+
+class PaintedSquires {
+  Paint paint;
+  Offset points;
+  PaintedSquires({this.points, this.paint});
+}

@@ -42,22 +42,22 @@ class _ClassicPaintState extends State<ClassicPaint> {
     ToolIconsData(FontAwesomeIcons.eraser, enumToolTypes.eraser),
     ToolIconsData(Icons.crop_square, enumToolTypes.rectangle),
     ToolIconsData(Icons.radio_button_unchecked, enumToolTypes.circle),
-    ToolIconsData(Icons.text_fields, enumToolTypes.text),
+    //ToolIconsData(Icons.text_fields, enumToolTypes.text), //TODO
   ];
 
   Paint getPoint() {
-    if (selectedTool == enumToolTypes.pencil) {
-      return Paint()
-        ..strokeCap = strokeType
-        ..isAntiAlias = true
-        ..strokeWidth = strokeWidth
-        ..color = selectedColor;
-    } else if (selectedTool == enumToolTypes.eraser) {
+    if (selectedTool == enumToolTypes.eraser) {
       return Paint()
         ..strokeCap = strokeType
         ..isAntiAlias = true
         ..strokeWidth = strokeWidth
         ..color = Colors.white;
+    } else {
+      return Paint()
+        ..strokeCap = strokeType
+        ..isAntiAlias = true
+        ..strokeWidth = strokeWidth
+        ..color = selectedColor;
     }
   }
 
@@ -205,16 +205,20 @@ class _ClassicPaintState extends State<ClassicPaint> {
                                 pointsList.add(null);
                               });
                             },
-                            child: Container(
-                              //Canvas
-                              color: Colors.white,
-                              //margin: EdgeInsets.only(bottom: 50, right: 80),
-                              child: CustomPaint(
-                                size: Size(
-                                    constraints.widthConstraints().maxWidth,
-                                    constraints.heightConstraints().maxHeight),
-                                painter: PainterCanvas(
-                                  pointsList: pointsList,
+                            child: ClipRect(
+                              child: Container(
+                                //Canvas
+                                color: Colors.white,
+                                //margin: EdgeInsets.only(bottom: 50, right: 80),
+                                child: CustomPaint(
+                                  size: Size(
+                                      constraints.widthConstraints().maxWidth,
+                                      constraints
+                                          .heightConstraints()
+                                          .maxHeight),
+                                  painter: PainterCanvas(
+                                    pointsList: pointsList,
+                                  ),
                                 ),
                               ),
                             ),
@@ -258,37 +262,7 @@ class _ClassicPaintState extends State<ClassicPaint> {
                   Container(
                     width: 350,
                     child: Wrap(
-                      children: <Widget>[
-                        colorBox(Color.fromRGBO(0, 0, 0, 1)),
-                        colorBox(Color.fromRGBO(125, 125, 125, 1)),
-                        colorBox(Color.fromRGBO(120, 0, 0, 1)),
-                        colorBox(Color.fromRGBO(120, 120, 0, 1)),
-                        colorBox(Color.fromRGBO(0, 120, 0, 1)),
-                        colorBox(Color.fromRGBO(0, 0, 120, 1)),
-                        colorBox(Color.fromRGBO(120, 0, 120, 1)),
-                        colorBox(Color.fromRGBO(120, 120, 60, 1)),
-                        colorBox(Color.fromRGBO(0, 120, 60, 1)),
-                        colorBox(Color.fromRGBO(0, 60, 120, 1)),
-                        colorBox(Color.fromRGBO(0, 60, 60, 1)),
-                        colorBox(Color.fromRGBO(60, 120, 120, 1)),
-                        colorBox(Color.fromRGBO(60, 60, 120, 1)),
-                        colorBox(Color.fromRGBO(120, 60, 30, 1)),
-                        //Second Row
-                        colorBox(Color.fromRGBO(255, 255, 255, 1)),
-                        colorBox(Color.fromRGBO(190, 190, 190, 1)),
-                        colorBox(Color.fromRGBO(255, 0, 0, 1)),
-                        colorBox(Color.fromRGBO(255, 255, 0, 1)),
-                        colorBox(Color.fromRGBO(0, 255, 0, 1)),
-                        colorBox(Color.fromRGBO(0, 0, 255, 1)),
-                        colorBox(Color.fromRGBO(255, 0, 255, 1)),
-                        colorBox(Color.fromRGBO(255, 255, 120, 1)),
-                        colorBox(Color.fromRGBO(0, 255, 120, 1)),
-                        colorBox(Color.fromRGBO(0, 120, 255, 1)),
-                        colorBox(Color.fromRGBO(0, 120, 120, 1)),
-                        colorBox(Color.fromRGBO(120, 255, 255, 1)),
-                        colorBox(Color.fromRGBO(120, 120, 255, 1)),
-                        colorBox(Color.fromRGBO(255, 120, 60, 1)),
-                      ],
+                      children: getColorBoxes(),
                     ),
                   ),
                 ],
@@ -407,6 +381,40 @@ class _ClassicPaintState extends State<ClassicPaint> {
         ),
       ),
     );
+  }
+
+  List<Widget> getColorBoxes() {
+    return [
+      colorBox(Color.fromRGBO(0, 0, 0, 1)),
+      colorBox(Color.fromRGBO(125, 125, 125, 1)),
+      colorBox(Color.fromRGBO(120, 0, 0, 1)),
+      colorBox(Color.fromRGBO(120, 120, 0, 1)),
+      colorBox(Color.fromRGBO(0, 120, 0, 1)),
+      colorBox(Color.fromRGBO(0, 0, 120, 1)),
+      colorBox(Color.fromRGBO(120, 0, 120, 1)),
+      colorBox(Color.fromRGBO(120, 120, 60, 1)),
+      colorBox(Color.fromRGBO(0, 120, 60, 1)),
+      colorBox(Color.fromRGBO(0, 60, 120, 1)),
+      colorBox(Color.fromRGBO(0, 60, 60, 1)),
+      colorBox(Color.fromRGBO(60, 120, 120, 1)),
+      colorBox(Color.fromRGBO(60, 60, 120, 1)),
+      colorBox(Color.fromRGBO(120, 60, 30, 1)),
+      //Second Row
+      colorBox(Color.fromRGBO(255, 255, 255, 1)),
+      colorBox(Color.fromRGBO(190, 190, 190, 1)),
+      colorBox(Color.fromRGBO(255, 0, 0, 1)),
+      colorBox(Color.fromRGBO(255, 255, 0, 1)),
+      colorBox(Color.fromRGBO(0, 255, 0, 1)),
+      colorBox(Color.fromRGBO(0, 0, 255, 1)),
+      colorBox(Color.fromRGBO(255, 0, 255, 1)),
+      colorBox(Color.fromRGBO(255, 255, 120, 1)),
+      colorBox(Color.fromRGBO(0, 255, 120, 1)),
+      colorBox(Color.fromRGBO(0, 120, 255, 1)),
+      colorBox(Color.fromRGBO(0, 120, 120, 1)),
+      colorBox(Color.fromRGBO(120, 255, 255, 1)),
+      colorBox(Color.fromRGBO(120, 120, 255, 1)),
+      colorBox(Color.fromRGBO(255, 120, 60, 1)),
+    ];
   }
 }
 

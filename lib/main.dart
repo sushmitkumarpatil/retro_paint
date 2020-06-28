@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'paint95.dart';
-import 'paint.dart';
 import 'package:flutter/services.dart';
 
 void main() {
