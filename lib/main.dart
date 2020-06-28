@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.grey,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      // home: PainterScreen(),
+      //home: PainterScreen(),
       home: ClassicPaint(),
     );
   }

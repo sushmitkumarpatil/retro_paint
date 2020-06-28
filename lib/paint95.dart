@@ -1,6 +1,16 @@
+/*
+TODO
+1. Free Line
+2. Clear -- Done
+3. Eraser 
+4. Undo -- Done
+5. Text
+6. Box
+*/
 import 'package:flutter/material.dart';
-import 'package:painter/painter.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'widgets/menu-items.dart';
+import 'widgets/painter.dart';
 import 'widgets/tool-icons.dart';
 
 class ClassicPaint extends StatefulWidget {
@@ -8,30 +18,49 @@ class ClassicPaint extends StatefulWidget {
   _ClassicPaintState createState() => _ClassicPaintState();
 }
 
+enum enumToolTypes { pencil, eraser, rectangle, circle, text }
+
+class ToolIconsData {
+  IconData icon;
+  bool isSelected;
+  enumToolTypes toolType;
+  ToolIconsData(this.icon, this.toolType, {this.isSelected = false});
+}
+
 class _ClassicPaintState extends State<ClassicPaint> {
-  PainterController _controller;
-  PainterController _newController() {
-    PainterController controller = new PainterController();
-    controller.thickness = 5.0;
-    controller.backgroundColor = Colors.green;
-    return controller;
-  }
+  List<PaintedPoints> pointsList = List();
+  List<PaintedPoints> pointsListDeleted = List();
+  List<RecordPaints> paintedPoints = List();
+  enumToolTypes selectedTool = enumToolTypes.pencil;
+
+  StrokeCap strokeType = StrokeCap.square;
+  double strokeWidth = 3.0;
 
   Color selectedColor = Colors.black;
   List<ToolIconsData> lstToolIcons = [
-    ToolIconsData(Icons.star_border, isSelected: true),
-    ToolIconsData(Icons.check_box_outline_blank),
-    ToolIconsData(Icons.leak_remove),
-    ToolIconsData(Icons.format_paint),
-    ToolIconsData(Icons.colorize),
-    ToolIconsData(Icons.brush),
-    ToolIconsData(Icons.gesture),
-    ToolIconsData(Icons.text_fields),
-    ToolIconsData(Icons.swap_horiz),
-    ToolIconsData(Icons.swap_calls),
-    ToolIconsData(Icons.crop_square),
-    ToolIconsData(Icons.forward),
+    ToolIconsData(Icons.create, enumToolTypes.pencil, isSelected: true),
+    ToolIconsData(FontAwesomeIcons.eraser, enumToolTypes.eraser),
+    ToolIconsData(Icons.crop_square, enumToolTypes.rectangle),
+    ToolIconsData(Icons.radio_button_unchecked, enumToolTypes.circle),
+    ToolIconsData(Icons.text_fields, enumToolTypes.text),
   ];
+
+  Paint getPoint() {
+    print(strokeWidth);
+    if (selectedTool == enumToolTypes.pencil) {
+      return Paint()
+        ..strokeCap = strokeType
+        ..isAntiAlias = true
+        ..strokeWidth = strokeWidth
+        ..color = selectedColor;
+    } else if (selectedTool == enumToolTypes.eraser) {
+      return Paint()
+        ..strokeCap = strokeType
+        ..isAntiAlias = true
+        ..strokeWidth = strokeWidth
+        ..color = Colors.white;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,10 +84,31 @@ class _ClassicPaintState extends State<ClassicPaint> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
                   MenuItem("File"),
-                  MenuItem("Edit"),
-                  MenuItem("View"),
-                  MenuItem("Image"),
-                  MenuItem("Colors"),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        //pointsListDeleted.;
+                        if (paintedPoints.length > 0) {
+                          RecordPaints lastPoint = paintedPoints.last;
+
+                          if (lastPoint.endIndex != null)
+                            pointsList.removeRange(
+                                lastPoint.startIndex, lastPoint.endIndex);
+                          paintedPoints.removeLast();
+                        }
+                      });
+                    },
+                    child: MenuItem("Undo"),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        pointsList.clear();
+                        paintedPoints.clear();
+                      });
+                    },
+                    child: MenuItem("Clear"),
+                  ),
                   MenuItem("Help"),
                 ],
               ),
@@ -71,23 +121,107 @@ class _ClassicPaintState extends State<ClassicPaint> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
-                    Container(
-                      width: 100,
-                      child: Wrap(
-                        children: getToolBoxIcons(),
-                      ),
-                    ),
-                    Expanded(
-                      child: Container(
-                        color: Colors.black.withOpacity(0.7),
-                        child: Expanded(
-                          child: Container(
-                            //Canvas
-                            color: Colors.white,
-                            margin: EdgeInsets.only(bottom: 50, right: 80),
+                    Column(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
+                        Container(
+                          width: 100,
+                          child: Wrap(
+                            children: getToolBoxIcons(),
                           ),
                         ),
-                      ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        Visibility(
+                          visible: selectedTool == enumToolTypes.pencil
+                              ? true
+                              : selectedTool == enumToolTypes.eraser
+                                  ? true
+                                  : false,
+                          child: Container(
+                            width: 80,
+                            height: 90,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey, width: 2),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                strokeWidthWidget(3),
+                                strokeWidthWidget(5),
+                                strokeWidthWidget(7),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Expanded(
+                      child: LayoutBuilder(builder: (context, constraints) {
+                        return Container(
+                          width: constraints.widthConstraints().maxWidth,
+                          height: constraints.heightConstraints().maxHeight,
+                          color: Colors.black.withOpacity(0.7),
+                          child: Expanded(
+                            child: GestureDetector(
+                              onPanUpdate: (details) {
+                                setState(() {
+                                  RenderBox renderBox =
+                                      context.findRenderObject();
+                                  pointsList.add(
+                                    PaintedPoints(
+                                      points: renderBox.globalToLocal(
+                                          details.globalPosition),
+                                      paint: getPoint(),
+                                    ),
+                                  );
+                                });
+                              },
+                              onPanStart: (details) {
+                                setState(() {
+                                  if (pointsList.length > 0) {
+                                    paintedPoints.add(
+                                        RecordPaints(pointsList.length, null));
+                                  } else
+                                    paintedPoints.add(RecordPaints(0, null));
+                                  RenderBox renderBox =
+                                      context.findRenderObject();
+                                  pointsList.add(
+                                    PaintedPoints(
+                                      points: renderBox.globalToLocal(
+                                          details.globalPosition),
+                                      paint: getPoint(),
+                                    ),
+                                  );
+                                });
+                              },
+                              onPanEnd: (details) {
+                                setState(() {
+                                  paintedPoints
+                                      .firstWhere(
+                                          (element) => element.endIndex == null)
+                                      .endIndex = pointsList.length;
+                                  pointsList.add(null);
+                                });
+                              },
+                              child: Container(
+                                //Canvas
+                                color: Colors.white,
+                                //margin: EdgeInsets.only(bottom: 50, right: 80),
+                                child: CustomPaint(
+                                  size: Size.infinite,
+                                  painter: PainterCanvas(
+                                    pointsList: pointsList,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
                     ),
                   ],
                 ),
@@ -212,6 +346,7 @@ class _ClassicPaintState extends State<ClassicPaint> {
         GestureDetector(
           onTap: () {
             setState(() {
+              selectedTool = item.toolType;
               lstToolIcons
                   .firstWhere((element) => element.isSelected == true)
                   .isSelected = false;
@@ -248,10 +383,37 @@ class _ClassicPaintState extends State<ClassicPaint> {
       ),
     );
   }
+
+  Widget strokeWidthWidget(double width) {
+    bool isSelected = strokeWidth == width ? true : false;
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: (10 - width), horizontal: 2),
+      decoration: BoxDecoration(
+        border: Border.all(
+            width: 1, color: isSelected ? Colors.black : Colors.grey),
+      ),
+      child: Material(
+        elevation: isSelected ? 1 : 0,
+        child: InkWell(
+          onTap: () {
+            setState(() {
+              strokeWidth = width;
+            });
+            print(strokeWidth);
+          },
+          child: Container(
+            width: 50,
+            height: width,
+            color: Colors.black,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class ToolIconsData {
-  IconData icon;
-  bool isSelected;
-  ToolIconsData(this.icon, {this.isSelected = false});
+class RecordPaints {
+  int startIndex;
+  int endIndex;
+  RecordPaints(this.startIndex, this.endIndex);
 }
