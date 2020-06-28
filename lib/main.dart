@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'paint95.dart';
+import 'package:retro_painter/splash-screen.dart';
 import 'package:flutter/services.dart';
 
 void main() {
@@ -16,6 +16,7 @@ class MyApp extends StatelessWidget {
     SystemChrome.setEnabledSystemUIOverlays([]);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      checkerboardOffscreenLayers: false,
       title: 'Retro Painter',
       theme: ThemeData(
         fontFamily: "Arial",
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       //home: PainterScreen(),
-      home: ClassicPaint(),
+      home: SplashScreen(),
     );
   }
 }
