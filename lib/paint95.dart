@@ -46,7 +46,6 @@ class _ClassicPaintState extends State<ClassicPaint> {
   ];
 
   Paint getPoint() {
-    print(strokeWidth);
     if (selectedTool == enumToolTypes.pencil) {
       return Paint()
         ..strokeCap = strokeType
@@ -165,57 +164,57 @@ class _ClassicPaintState extends State<ClassicPaint> {
                           width: constraints.widthConstraints().maxWidth,
                           height: constraints.heightConstraints().maxHeight,
                           color: Colors.black.withOpacity(0.7),
-                          child: Expanded(
-                            child: GestureDetector(
-                              onPanUpdate: (details) {
-                                setState(() {
-                                  RenderBox renderBox =
-                                      context.findRenderObject();
-                                  pointsList.add(
-                                    PaintedPoints(
-                                      points: renderBox.globalToLocal(
-                                          details.globalPosition),
-                                      paint: getPoint(),
-                                    ),
-                                  );
-                                });
-                              },
-                              onPanStart: (details) {
-                                setState(() {
-                                  if (pointsList.length > 0) {
-                                    paintedPoints.add(
-                                        RecordPaints(pointsList.length, null));
-                                  } else
-                                    paintedPoints.add(RecordPaints(0, null));
-                                  RenderBox renderBox =
-                                      context.findRenderObject();
-                                  pointsList.add(
-                                    PaintedPoints(
-                                      points: renderBox.globalToLocal(
-                                          details.globalPosition),
-                                      paint: getPoint(),
-                                    ),
-                                  );
-                                });
-                              },
-                              onPanEnd: (details) {
-                                setState(() {
-                                  paintedPoints
-                                      .firstWhere(
-                                          (element) => element.endIndex == null)
-                                      .endIndex = pointsList.length;
-                                  pointsList.add(null);
-                                });
-                              },
-                              child: Container(
-                                //Canvas
-                                color: Colors.white,
-                                //margin: EdgeInsets.only(bottom: 50, right: 80),
-                                child: CustomPaint(
-                                  size: Size.infinite,
-                                  painter: PainterCanvas(
-                                    pointsList: pointsList,
+                          child: GestureDetector(
+                            onPanUpdate: (details) {
+                              setState(() {
+                                RenderBox renderBox =
+                                    context.findRenderObject();
+                                pointsList.add(
+                                  PaintedPoints(
+                                    points: renderBox
+                                        .globalToLocal(details.globalPosition),
+                                    paint: getPoint(),
                                   ),
+                                );
+                              });
+                            },
+                            onPanStart: (details) {
+                              setState(() {
+                                if (pointsList.length > 0) {
+                                  paintedPoints.add(
+                                      RecordPaints(pointsList.length, null));
+                                } else
+                                  paintedPoints.add(RecordPaints(0, null));
+                                RenderBox renderBox =
+                                    context.findRenderObject();
+                                pointsList.add(
+                                  PaintedPoints(
+                                    points: renderBox
+                                        .globalToLocal(details.globalPosition),
+                                    paint: getPoint(),
+                                  ),
+                                );
+                              });
+                            },
+                            onPanEnd: (details) {
+                              setState(() {
+                                paintedPoints
+                                    .firstWhere(
+                                        (element) => element.endIndex == null)
+                                    .endIndex = pointsList.length;
+                                pointsList.add(null);
+                              });
+                            },
+                            child: Container(
+                              //Canvas
+                              color: Colors.white,
+                              //margin: EdgeInsets.only(bottom: 50, right: 80),
+                              child: CustomPaint(
+                                size: Size(
+                                    constraints.widthConstraints().maxWidth,
+                                    constraints.heightConstraints().maxHeight),
+                                painter: PainterCanvas(
+                                  pointsList: pointsList,
                                 ),
                               ),
                             ),
@@ -399,7 +398,6 @@ class _ClassicPaintState extends State<ClassicPaint> {
             setState(() {
               strokeWidth = width;
             });
-            print(strokeWidth);
           },
           child: Container(
             width: 50,
