@@ -2,10 +2,11 @@
 TODO
 1. Free Line
 2. Clear -- Done
-3. Eraser 
+3. Eraser -- Done 
 4. Undo -- Done
-5. Text
-6. Box
+5. Circle -- Done
+6. Box -- Done
+7. Save to Image -- Pending 
 */
 import 'dart:io';
 
@@ -35,6 +36,7 @@ class _ClassicPaintState extends State<ClassicPaint> {
   List<RecordPaints> paintedPoints = List();
   enumToolTypes selectedTool = enumToolTypes.pencil;
   List<enumToolTypes> drawHistory = List();
+  bool isCanvasLocked = false;
 
   List<PaintedSquires> squaresList = List();
   PaintedSquires unfinishedSquare;
@@ -187,6 +189,7 @@ class _ClassicPaintState extends State<ClassicPaint> {
                           color: Colors.black.withOpacity(0.7),
                           child: GestureDetector(
                             onPanUpdate: (details) {
+                              if (isCanvasLocked) return;
                               setState(() {
                                 RenderBox renderBox =
                                     context.findRenderObject();
@@ -211,6 +214,7 @@ class _ClassicPaintState extends State<ClassicPaint> {
                               });
                             },
                             onPanStart: (details) {
+                              if (isCanvasLocked) return;
                               setState(() {
                                 RenderBox renderBox =
                                     context.findRenderObject();
@@ -249,6 +253,7 @@ class _ClassicPaintState extends State<ClassicPaint> {
                               });
                             },
                             onPanEnd: (details) {
+                              if (isCanvasLocked) return;
                               setState(() {
                                 drawHistory.add(selectedTool);
                                 if (selectedTool == enumToolTypes.pencil ||
@@ -336,6 +341,17 @@ class _ClassicPaintState extends State<ClassicPaint> {
                       children: getColorBoxes(),
                     ),
                   ),
+                  Spacer(),
+                  IconButton(
+                      tooltip: "Lock canvas prevent drawing",
+                      icon: Icon(
+                        isCanvasLocked ? Icons.lock_open : Icons.lock_outline,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          isCanvasLocked = !isCanvasLocked;
+                        });
+                      })
                 ],
               ),
             ),
