@@ -343,9 +343,11 @@ class _ClassicPaintState extends State<ClassicPaint> {
                   ),
                   Spacer(),
                   IconButton(
-                      tooltip: "Lock canvas prevent drawing",
+                      tooltip: isCanvasLocked
+                          ? "Click to unlock drawing"
+                          : "Click to lock drawing",
                       icon: Icon(
-                        isCanvasLocked ? Icons.lock_open : Icons.lock_outline,
+                        isCanvasLocked ? Icons.lock_outline : Icons.lock_open,
                       ),
                       onPressed: () {
                         setState(() {
