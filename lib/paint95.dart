@@ -9,9 +9,14 @@ TODO
 7. Save to Image -- Pending 
 */
 import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'widgets/menu-items.dart';
 import 'widgets/painter.dart';
 import 'widgets/tool-icons.dart';
@@ -37,6 +42,7 @@ class _ClassicPaintState extends State<ClassicPaint> {
   enumToolTypes selectedTool = enumToolTypes.pencil;
   List<enumToolTypes> drawHistory = List();
   bool isCanvasLocked = false;
+  bool saveClicked = false;
 
   List<PaintedSquires> squaresList = List();
   PaintedSquires unfinishedSquare;
@@ -72,6 +78,16 @@ class _ClassicPaintState extends State<ClassicPaint> {
     }
   }
 
+  void showToastMessage(String message) {
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.black87,
+        textColor: Colors.white,
+        fontSize: 16.0);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -93,7 +109,14 @@ class _ClassicPaintState extends State<ClassicPaint> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
-                  MenuItem("File"),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        saveClicked = true;
+                      });
+                    },
+                    child: MenuItem("Save"),
+                  ),
                   GestureDetector(
                     onTap: () {
                       setState(() {
@@ -290,11 +313,39 @@ class _ClassicPaintState extends State<ClassicPaint> {
                                           .heightConstraints()
                                           .maxHeight),
                                   painter: PainterCanvas(
-                                      pointsList: pointsList,
-                                      squaresList: squaresList,
-                                      circlesList: circleList,
-                                      unfinishedSquare: unfinishedSquare,
-                                      unfinishedCircle: unfinishedCircle),
+                                    pointsList: pointsList,
+                                    squaresList: squaresList,
+                                    circlesList: circleList,
+                                    unfinishedSquare: unfinishedSquare,
+                                    unfinishedCircle: unfinishedCircle,
+                                    saveImage: saveClicked,
+                                    saveCallback: (Picture picture) async {
+                                      var status =
+                                          await Permission.storage.status;
+                                      if (!status.isGranted) {
+                                        await Permission.storage.request();
+                                      }
+                                      if (status.isGranted) {
+                                        final img = await picture.toImage(
+                                            constraints.maxWidth.round(),
+                                            constraints.maxHeight.round());
+                                        final bytes = await img.toByteData(
+                                            format: ImageByteFormat.png);
+                                        await ImageGallerySaver.saveImage(
+                                          Uint8List.fromList(
+                                              bytes.buffer.asUint8List()),
+                                          quality: 100,
+                                          name:
+                                              DateTime.now().toIso8601String(),
+                                        );
+                                        showToastMessage(
+                                            "Image saved to gallery.");
+                                      }
+                                      setState(() {
+                                        saveClicked = false;
+                                      });
+                                    },
+                                  ),
                                 ),
                               ),
                             ),

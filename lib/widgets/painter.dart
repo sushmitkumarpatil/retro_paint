@@ -1,6 +1,9 @@
 import 'dart:ui';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+
+typedef ImageSaveCallback = void Function(Picture picture);
 
 class PainterCanvas extends CustomPainter {
   List<PaintedPoints> pointsList;
@@ -11,17 +14,29 @@ class PainterCanvas extends CustomPainter {
   List<PaintedCircles> circlesList;
   PaintedCircles unfinishedCircle;
 
+  ImageSaveCallback saveCallback;
+
+  bool saveImage;
+
   PainterCanvas(
       {this.pointsList,
       this.squaresList,
       this.unfinishedSquare,
       this.circlesList,
-      this.unfinishedCircle});
+      this.unfinishedCircle,
+      this.saveImage,
+      this.saveCallback});
 
   List<Offset> offsetPoints = List();
 
   @override
   void paint(Canvas canvas, Size size) {
+    final recorder = ui.PictureRecorder();
+    if (saveImage) {
+      canvas = Canvas(recorder);
+    }
+    canvas.drawColor(Colors.white, BlendMode.color);
+
     for (int i = 0; i < pointsList.length - 1; i++) {
       if (pointsList[i] != null && pointsList[i + 1] != null) {
         canvas.drawLine(pointsList[i].points, pointsList[i + 1].points,
@@ -66,6 +81,11 @@ class PainterCanvas extends CustomPainter {
       else
         radius = (unfinishedCircle.end.dx - unfinishedCircle.start.dx) / 2;
       canvas.drawCircle(unfinishedCircle.start, radius, unfinishedCircle.paint);
+    }
+
+    if (saveImage) {
+      final Picture picture = recorder.endRecording();
+      saveCallback(picture);
     }
   }
 
