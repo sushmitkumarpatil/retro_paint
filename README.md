@@ -13,10 +13,10 @@ A rich retro windows UI based painter application using Flutter.
 9. Export to gallery
 
 ### Plugins
-> font_awesome_flutter: 8.8.1
-> image_gallery_saver: '^1.5.0'
-> permission_handler: 5.0.1+1
-> fluttertoast: 4.0.1
+- font_awesome_flutter: 8.8.1
+- image_gallery_saver: '^1.5.0'
+- permission_handler: 5.0.1+1
+- fluttertoast: 4.0.1
 
 ### Youtube video link
 https://www.youtube.com/watch?v=Ad9ttn6Y2Ec
