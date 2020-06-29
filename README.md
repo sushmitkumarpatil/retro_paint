@@ -1,16 +1,27 @@
-# retro_painter
+# Flutter Retro Painter
+A rich retro windows UI based painter application using Flutter.
 
-A new Flutter project.
+# Features!
+1. Draw using pencil 
+2. Draw Squires
+3. Draw Circles
+4. Select Pencil Stroke
+5. Select Stroke Color
+6. Undo 
+7. Clear
+8. Lock/Unlock Drawinig
+9. Export to gallery
 
-## Getting Started
+### Plugins
+> font_awesome_flutter: 8.8.1
+> image_gallery_saver: '^1.5.0'
+> permission_handler: 5.0.1+1
+> fluttertoast: 4.0.1
 
-This project is a starting point for a Flutter application.
+### Youtube video link
+https://www.youtube.com/watch?v=Ad9ttn6Y2Ec
 
-A few resources to get you started if this is your first Flutter project:
+License
+----
+MIT
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
