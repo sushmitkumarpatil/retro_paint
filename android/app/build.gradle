@@ -32,6 +32,10 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
+    aaptOptions {
+        cruncherEnabled = false
+    }
+
     lintOptions {
         disable 'InvalidPackage'
     }
